@@ -1,8 +1,10 @@
-import { React , useState} from 'react'
+import { React , useState , useContext} from 'react'
 import {Box , TextField , Button, styled, Typography} from '@mui/material'
 import Image from "./logo.png";
 
 import { API } from "../../service/api";
+import { DataContext } from '../../context/DataProvider';
+import { useNavigate } from 'react-router-dom';
 
 const Component = styled(Box)`
     width : 400px;
@@ -45,10 +47,10 @@ const Error = styled(Typography)`
     font-weight: 600;
 `
 
-// const loginInitialValues = {
-//     Username : '',
-//     Password : ''
-// }
+const loginInitialValues = {
+    Username : '',
+    Password : ''
+}
 
 const signUpIntitalValues =  {
     Name : '',
@@ -57,7 +59,7 @@ const signUpIntitalValues =  {
 }
 
 
-const Login = () => {
+const Login = ({ isUserAuthenticated }) => {
 
     const [account ,toggleAccount] = useState('login');
 
@@ -65,7 +67,11 @@ const Login = () => {
 
     const [error, setError] = useState('');
 
-    // const[login , setLogin] = useState(loginInitialValues);
+    const[login , setLogin] = useState(loginInitialValues);
+
+    const {setAccount} = useContext(DataContext);
+
+    const navigate = useNavigate();
 
     const toggleSignup = () => {
         account === 'signup' ? toggleAccount('login') : toggleAccount('signup');
@@ -86,21 +92,28 @@ const Login = () => {
        }
     }   
 
-    // const onValueChange = (e) => {
-    //     setLogin( {...login, [e.target.name] : e.target.value});
-    // }
+    const onValueChange = (e) => {
+        setLogin( {...login, [e.target.name] : e.target.value});
+    }
 
-    // const loginUser = async() => {
-    //     let response = await API.userLogin(login);
-    //     if(response.isSuccess){
-    //         setError('');
+    const loginUser = async() => {
+        let response = await API.userLogin(login);
+        if(response.isSuccess){
+            setError('');
+            sessionStorage.setItem(`accessToken` , `Bearer ${response.data.accessToken}`);
+            sessionStorage.setItem(`refreshToken` , `Bearer ${response.data.refreshToken}`);
 
-    //     }else{
-    //         setError("Something went wrong. Please try again later!");
-    //     }
-    // }
+            setAccount( {Username : response.data.Username , Name : response.data.Name});
+
+            isUserAuthenticated(true);
+
+            navigate('/');
 
 
+        }else{
+            setError("Something went wrong. Please try again later!");
+        }
+    }
 
   return (
     <Component>
@@ -110,10 +123,10 @@ const Login = () => {
             account === 'login' ?
 
                 <Wrapper>
-                <TextField id="filled-basic"  label="Enter Username" variant="standard" name="Username" />
-                <TextField id="filled-basic"  label="Enter Password" variant="standard" name="Password"/>
+                <TextField id="filled-basic" value={login.Username} label="Enter Username" variant="standard" name="Username" onChange={(e) => onValueChange(e)}/>
+                <TextField id="filled-basic" value={login.Password} label="Enter Password" variant="standard" name="Password" onChange={(e) => onValueChange(e)}/>
                 
-                <LoginButton variant="contained" >Login</LoginButton>
+                <LoginButton variant="contained" onClick={() => loginUser()}>Login</LoginButton>
                 <Text style={{textAlign:'center'}}>Or</Text>
                 <SignUpButton variant="text" onClick={() => toggleSignup()}>Create an account</SignUpButton>
                 </Wrapper> 
