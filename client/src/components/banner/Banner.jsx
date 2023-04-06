@@ -4,7 +4,7 @@ import { Box , Typography ,styled } from "@mui/material";
 const Image = styled(Box)`
     background : url(https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg) center/55%;
     width : 100%;
-    height: 50vh;
+    height: 40vh;
     display : flex;
     align-items: center;
     justify-content: center;
